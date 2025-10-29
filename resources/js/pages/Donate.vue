@@ -23,7 +23,7 @@
                 <h3 class="text-xl font-semibold mb-4 text-[#1b1b18] dark:text-[#EDEDEC]">PayPal</h3>
                 <div class="bg-white p-4 rounded-lg shadow-sm">
                   <img 
-                    src="/QR codes/703.png" 
+                    src="/QR codes/705.png" 
                     alt="PayPal QR Code for Marines of Tahlequah" 
                     class="w-48 h-48 object-contain"
                   />
@@ -38,7 +38,7 @@
                 <h3 class="text-xl font-semibold mb-4 text-[#1b1b18] dark:text-[#EDEDEC]">Cash App</h3>
                 <div class="bg-white p-4 rounded-lg shadow-sm">
                   <img 
-                    src="/QR codes/704.png" 
+                    src="/QR codes/706.png" 
                     alt="Cash App QR Code for Marines of Tahlequah" 
                     class="w-48 h-48 object-contain"
                   />
