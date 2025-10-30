@@ -107,6 +107,15 @@ const closeMobileMenu = () => {
         User Roles
       </Link>
       
+      <!-- Slideshow Management - Only show for superadmin -->
+      <Link
+        v-if="page.props.auth?.user && page.props.auth.user.role === 'superadmin'"
+        :href="'/slideshow'"
+        class="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-purple-600 hover:border-[#19140035] dark:text-purple-400 dark:hover:border-[#3E3E3A]"
+      >
+        Slideshow
+      </Link>
+      
       <!-- User Menu Dropdown - Only show when logged in -->
       <div v-if="page.props.auth && page.props.auth.user" class="relative">
         <button
@@ -318,6 +327,13 @@ const closeMobileMenu = () => {
                 class="block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-gray-100 dark:text-red-400 dark:hover:bg-gray-800"
               >
                 User Roles
+              </Link>
+              <Link
+                :href="'/slideshow'"
+                @click="closeMobileMenu"
+                class="block px-3 py-2 rounded-md text-base font-medium text-purple-600 hover:bg-gray-100 dark:text-purple-400 dark:hover:bg-gray-800"
+              >
+                Slideshow
               </Link>
             </div>
           </template>
