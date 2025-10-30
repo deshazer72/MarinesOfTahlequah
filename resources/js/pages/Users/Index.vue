@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';

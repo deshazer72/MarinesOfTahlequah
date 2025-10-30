@@ -4,20 +4,46 @@ import { Head } from '@inertiajs/vue3';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 
-const images = [
-  'IMG_8884.jpg','IMG_8885.jpg','IMG_8886.jpg','IMG_8887.jpg','IMG_8888.jpg','IMG_8889.jpg','IMG_8890.jpg','IMG_8891.jpg','IMG_8892.jpg',
-  'IMG_8898.JPG','IMG_8899.JPG','IMG_8900.JPG','IMG_8901.JPG','IMG_8932.JPG','IMG_8933.JPG','IMG_8934.JPG','IMG_8935.JPG','IMG_8936.JPG',
-  'IMG_8951.jpg','IMG_8952.jpg','IMG_8953.jpg','IMG_8954.jpg','IMG_8955.jpg','IMG_8956.jpg','IMG_8957.jpg','IMG_8958.jpg','IMG_8959.jpg',
-  'IMG_8960.jpg','IMG_8961.jpg','IMG_8962.jpg','IMG_8963.jpg','IMG_8964.jpg','IMG_8965.jpg','IMG_8966.jpg','IMG_8967.jpg','IMG_8968.jpg',
-  'IMG_8969.jpg','IMG_8970.jpg','IMG_8971.jpg','pic1.jpg','pic2.jpg','pic3.jpg','pic4.jpg'
-].map(img => `/MarinesPictures/${img}`);
-
+const images = ref<string[]>([]);
+const loading = ref(true);
 const current = ref(0);
-function next() { current.value = (current.value + 1) % images.length; }
-function prev() { current.value = (current.value - 1 + images.length) % images.length; }
+
+function next() { 
+    if (images.value.length > 0) {
+        current.value = (current.value + 1) % images.value.length; 
+    }
+}
+
+function prev() { 
+    if (images.value.length > 0) {
+        current.value = (current.value - 1 + images.value.length) % images.value.length; 
+    }
+}
 
 let interval: NodeJS.Timeout | null = null;
-onMounted(() => { interval = setInterval(next, 4000); });
+
+onMounted(async () => { 
+    try {
+        const response = await fetch('/api/slideshow/photos');
+        const data = await response.json();
+        images.value = data.photos.map((photo: { url: string }) => photo.url);
+    } catch (error) {
+        console.error('Failed to load slideshow photos:', error);
+        // Fallback to default images if API fails
+        images.value = [
+            'IMG_8884.jpg','IMG_8885.jpg','IMG_8886.jpg','IMG_8887.jpg','IMG_8888.jpg','IMG_8889.jpg','IMG_8890.jpg','IMG_8891.jpg','IMG_8892.jpg',
+            'IMG_8898.JPG','IMG_8899.JPG','IMG_8900.JPG','IMG_8901.JPG','IMG_8932.JPG','IMG_8933.JPG','IMG_8934.JPG','IMG_8935.JPG','IMG_8936.JPG',
+            'IMG_8951.jpg','IMG_8952.jpg','IMG_8953.jpg','IMG_8954.jpg','IMG_8955.jpg','IMG_8956.jpg','IMG_8957.jpg','IMG_8958.jpg','IMG_8959.jpg',
+            'IMG_8960.jpg','IMG_8961.jpg','IMG_8962.jpg','IMG_8963.jpg','IMG_8964.jpg','IMG_8965.jpg','IMG_8966.jpg','IMG_8967.jpg','IMG_8968.jpg',
+            'IMG_8969.jpg','IMG_8970.jpg','IMG_8971.jpg','pic1.jpg','pic2.jpg','pic3.jpg','pic4.jpg'
+        ].map(img => `/MarinesPictures/${img}`);
+    } finally {
+        loading.value = false;
+    }
+    
+    interval = setInterval(next, 4000); 
+});
+
 onUnmounted(() => { if (interval) clearInterval(interval); });
 </script>
 
@@ -33,9 +59,13 @@ onUnmounted(() => { if (interval) clearInterval(interval); });
                 <div class="flex flex-col items-center justify-center w-full">
                     <h1 class="text-3xl font-bold mb-6 text-[#1b1b18] dark:text-[#EDEDEC]">Marines of Tahlequah</h1>
                     <div class="relative w-full h-[500px] flex items-center justify-center bg-white rounded-lg shadow-lg dark:bg-[#161615]">
-                        <img :src="images[current]" alt="Marine Slideshow" class="object-contain w-full h-full rounded-lg transition duration-500" />
-                        <button @click="prev" class="absolute left-4 top-1/2 -translate-y-1/2 bg-[#1b1b18] text-white px-3 py-2 rounded-full shadow hover:bg-[#232323] transition">&#8592;</button>
-                        <button @click="next" class="absolute right-4 top-1/2 -translate-y-1/2 bg-[#1b1b18] text-white px-3 py-2 rounded-full shadow hover:bg-[#232323] transition">&#8594;</button>
+                        <div v-if="loading" class="text-gray-500 dark:text-gray-400">Loading...</div>
+                        <div v-else-if="images.length === 0" class="text-gray-500 dark:text-gray-400">No photos available</div>
+                        <template v-else>
+                            <img :src="images[current]" alt="Marine Slideshow" class="object-contain w-full h-full rounded-lg transition duration-500" />
+                            <button @click="prev" class="absolute left-4 top-1/2 -translate-y-1/2 bg-[#1b1b18] text-white px-3 py-2 rounded-full shadow hover:bg-[#232323] transition">&#8592;</button>
+                            <button @click="next" class="absolute right-4 top-1/2 -translate-y-1/2 bg-[#1b1b18] text-white px-3 py-2 rounded-full shadow hover:bg-[#232323] transition">&#8594;</button>
+                        </template>
                     </div>
 
                     <!-- Mission Statement -->
