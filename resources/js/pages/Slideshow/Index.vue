@@ -11,7 +11,7 @@ interface Photo {
     modified: number;
 }
 
-const props = defineProps<{
+defineProps<{
     photos: Photo[];
 }>();
 

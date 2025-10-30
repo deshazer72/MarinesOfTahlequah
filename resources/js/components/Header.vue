@@ -3,7 +3,6 @@ import { login, register } from '@/routes';
 import { Link } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
-import UserMenuContent from '@/components/UserMenuContent.vue';
 
 const page = usePage();
 const showUserMenu = ref(false);

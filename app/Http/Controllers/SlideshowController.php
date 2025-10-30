@@ -22,9 +22,9 @@ class SlideshowController extends Controller
     public function index()
     {
         $photos = $this->getPhotos();
-        
+
         return Inertia::render('Slideshow/Index', [
-            'photos' => $photos
+            'photos' => $photos,
         ]);
     }
 
@@ -34,7 +34,7 @@ class SlideshowController extends Controller
     public function list()
     {
         return response()->json([
-            'photos' => $this->getPhotos()
+            'photos' => $this->getPhotos(),
         ]);
     }
 
@@ -44,12 +44,12 @@ class SlideshowController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'photo' => 'required|image|mimes:jpeg,jpg,png,gif|max:10240' // 10MB max
+            'photo' => 'required|image|mimes:jpeg,jpg,png,gif|max:10240', // 10MB max
         ]);
 
         $file = $request->file('photo');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        
+        $filename = time().'_'.$file->getClientOriginalName();
+
         $file->move($this->getPicturesPath(), $filename);
 
         return back()->with('success', 'Photo uploaded successfully!');
@@ -61,11 +61,11 @@ class SlideshowController extends Controller
     public function destroy(Request $request)
     {
         $request->validate([
-            'filename' => 'required|string'
+            'filename' => 'required|string',
         ]);
 
         $filename = $request->input('filename');
-        $filePath = $this->getPicturesPath() . '/' . $filename;
+        $filePath = $this->getPicturesPath().'/'.$filename;
 
         // Security check: ensure the filename doesn't contain path traversal
         if (basename($filename) !== $filename) {
@@ -74,6 +74,7 @@ class SlideshowController extends Controller
 
         if (File::exists($filePath)) {
             File::delete($filePath);
+
             return back()->with('success', 'Photo deleted successfully!');
         }
 
@@ -86,8 +87,8 @@ class SlideshowController extends Controller
     private function getPhotos(): array
     {
         $picturesPath = $this->getPicturesPath();
-        
-        if (!File::exists($picturesPath)) {
+
+        if (! File::exists($picturesPath)) {
             return [];
         }
 
@@ -100,15 +101,15 @@ class SlideshowController extends Controller
             if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $filename)) {
                 $photos[] = [
                     'filename' => $filename,
-                    'url' => '/MarinesPictures/' . $filename,
+                    'url' => '/MarinesPictures/'.$filename,
                     'size' => $file->getSize(),
-                    'modified' => $file->getMTime()
+                    'modified' => $file->getMTime(),
                 ];
             }
         }
 
         // Sort by filename
-        usort($photos, function($a, $b) {
+        usort($photos, function ($a, $b) {
             return strcmp($a['filename'], $b['filename']);
         });
 

@@ -1,11 +1,11 @@
 <?php
 
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\SlideshowController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\EventController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\AboutController;
-use App\Http\Controllers\SlideshowController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -47,7 +47,7 @@ Route::middleware(['auth', 'role:superadmin'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-    
+
     // Slideshow management routes
     Route::get('/slideshow', [SlideshowController::class, 'index'])->name('slideshow.index');
     Route::post('/slideshow/upload', [SlideshowController::class, 'upload'])->name('slideshow.upload');
