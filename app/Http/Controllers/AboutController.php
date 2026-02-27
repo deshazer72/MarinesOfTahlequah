@@ -25,6 +25,8 @@ class AboutController extends Controller
         ]);
     }
 
+    // this is a demo to show how git works 
+
     /**
      * Show the form for creating a new resource.
      */
