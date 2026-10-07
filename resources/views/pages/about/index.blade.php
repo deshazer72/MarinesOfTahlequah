@@ -16,13 +16,24 @@ class extends Component {
     {
         $isAdmin = auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin());
 
-        return [
-            'aboutItems' => About::with('user')
+        $aboutItems = collect();
+        $dbError = null;
+
+        try {
+            $aboutItems = About::with('user')
                 ->when(! $isAdmin, fn ($q) => $q->where('is_published', true))
                 ->orderBy('order', 'asc')
                 ->orderBy('created_at', 'desc')
-                ->get(),
+                ->get();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('About page query error: ' . $e->getMessage());
+            $dbError = $e->getMessage();
+        }
+
+        return [
+            'aboutItems' => $aboutItems,
             'isAdmin' => $isAdmin,
+            'dbError' => $dbError,
         ];
     }
 
@@ -67,6 +78,16 @@ class extends Component {
                 </flux:button>
             @endif
         </div>
+
+        @if ($dbError)
+            <div class="mb-8 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-300">
+                <div class="flex items-center gap-2 font-bold mb-1">
+                    <flux:icon.exclamation-triangle class="size-4" />
+                    <span>Database Setup Required</span>
+                </div>
+                <p>The database tables have not been created yet. In your Laravel Cloud console, run: <code class="bg-black/30 px-2 py-0.5 rounded font-mono text-xs text-amber-200">php artisan migrate --force</code> followed by <code class="bg-black/30 px-2 py-0.5 rounded font-mono text-xs text-amber-200">php artisan db:seed --force</code>.</p>
+            </div>
+        @endif
 
         {{-- Content List --}}
         @if ($aboutItems->isEmpty())

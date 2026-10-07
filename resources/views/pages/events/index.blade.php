@@ -92,32 +92,42 @@ class extends Component {
             $cursor = $cursor->addDay();
         }
 
-        $gridEvents = Event::with(['creator', 'updater'])
-            ->whereBetween('event_datetime', [
-                $gridStart->startOfDay(),
-                $gridEnd->endOfDay(),
-            ])
-            ->orderBy('event_datetime', 'asc')
-            ->get();
-
-        $eventsByDate = $gridEvents->groupBy(fn ($e) => $e->event_datetime->format('Y-m-d'));
-
-        $upcomingEvents = Event::with(['creator', 'updater'])
-            ->where('event_datetime', '>=', $today->startOfDay())
-            ->orderBy('event_datetime', 'asc')
-            ->get();
-
+        $gridEvents = collect();
+        $upcomingEvents = collect();
         $selectedDateEvents = collect();
-        if ($this->selected_date) {
-            $selectedDateEvents = Event::with(['creator', 'updater'])
-                ->whereDate('event_datetime', $this->selected_date)
+        $allEvents = collect();
+        $dbError = null;
+
+        try {
+            $gridEvents = Event::with(['creator', 'updater'])
+                ->whereBetween('event_datetime', [
+                    $gridStart->startOfDay(),
+                    $gridEnd->endOfDay(),
+                ])
                 ->orderBy('event_datetime', 'asc')
                 ->get();
+
+            $upcomingEvents = Event::with(['creator', 'updater'])
+                ->where('event_datetime', '>=', $today->startOfDay())
+                ->orderBy('event_datetime', 'asc')
+                ->get();
+
+            if ($this->selected_date) {
+                $selectedDateEvents = Event::with(['creator', 'updater'])
+                    ->whereDate('event_datetime', $this->selected_date)
+                    ->orderBy('event_datetime', 'asc')
+                    ->get();
+            }
+
+            $allEvents = Event::with(['creator', 'updater'])
+                ->orderBy('event_datetime', 'desc')
+                ->get();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Events page query error: ' . $e->getMessage());
+            $dbError = $e->getMessage();
         }
 
-        $allEvents = Event::with(['creator', 'updater'])
-            ->orderBy('event_datetime', 'desc')
-            ->get();
+        $eventsByDate = $gridEvents->groupBy(fn ($e) => $e->event_datetime->format('Y-m-d'));
 
         return [
             'month_label' => $monthStart->format('F Y'),
@@ -129,6 +139,7 @@ class extends Component {
             'selected_date_events' => $selectedDateEvents,
             'all_events' => $allEvents,
             'isAdmin' => auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()),
+            'dbError' => $dbError,
         ];
     }
 }; ?>
@@ -179,6 +190,16 @@ class extends Component {
                 @endif
             </div>
         </div>
+
+        @if ($dbError)
+            <div class="mb-8 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-300">
+                <div class="flex items-center gap-2 font-bold mb-1">
+                    <flux:icon.exclamation-triangle class="size-4" />
+                    <span>Database Setup Required</span>
+                </div>
+                <p>The database tables have not been created yet. In your Laravel Cloud console, run: <code class="bg-black/30 px-2 py-0.5 rounded font-mono text-xs text-amber-200">php artisan migrate --force</code> followed by <code class="bg-black/30 px-2 py-0.5 rounded font-mono text-xs text-amber-200">php artisan db:seed --force</code>.</p>
+            </div>
+        @endif
 
         @if ($view_mode === 'calendar')
             {{-- Interactive Calendar + Upcoming Events View (like Carter Cabin) --}}
