@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: 'postgres:16-alpine'
+    container_name: marines_postgres
+    restart: unless-stopped
+    ports:
+      - '${FORWARD_DB_PORT:-5432}:5432'
+    environment:
+      POSTGRES_DB: '${DB_DATABASE:-marines_of_tahlequah}'
+      POSTGRES_USER: '${DB_USERNAME:-postgres}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-postgres}'
+    volumes:
+      - 'marines-pgsql-data:/var/lib/postgresql/data'
+    networks:
+      - marines-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-marines_of_tahlequah}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  marines-net:
+    driver: bridge
+
+volumes:
+  marines-pgsql-data:
+    driver: local

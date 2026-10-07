@@ -1,52 +1,43 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Http\Controllers\EventController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\AboutController;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+Route::view('/', 'welcome')->name('home');
+Route::livewire('donate', 'pages::donate.index')->name('donate');
+Route::livewire('about', 'pages::about.index')->name('about.index');
 
-Route::get('/donate', function () {
-    return Inertia::render('Donate');
-})->name('donate');
-
-// About routes
-Route::get('/about', [AboutController::class, 'index'])->name('about.index');
-
-// Admin-only about management routes
+// Admin Event, About & Slideshow Management (must come before dynamic {event} param)
 Route::middleware(['auth', 'role:admin,superadmin'])->group(function () {
-    Route::get('/about/create', [AboutController::class, 'create'])->name('about.create');
-    Route::post('/about', [AboutController::class, 'store'])->name('about.store');
-    Route::get('/about/{about}/edit', [AboutController::class, 'edit'])->name('about.edit');
-    Route::put('/about/{about}', [AboutController::class, 'update'])->name('about.update');
-    Route::delete('/about/{about}', [AboutController::class, 'destroy'])->name('about.destroy');
+    Route::livewire('events/create', 'pages::events.create')->name('events.create');
+    Route::livewire('events/{event}/edit', 'pages::events.edit')->name('events.edit');
+    Route::livewire('about/create', 'pages::about.create')->name('about.create');
+    Route::livewire('about/{about}/edit', 'pages::about.edit')->name('about.edit');
+    Route::livewire('admin/slideshow', 'pages::slideshow.index')->name('admin.slideshow');
 });
 
-// Event routes
-Route::get('/events', [EventController::class, 'index'])->name('events.index');
+// Public Events routes
+Route::livewire('events', 'pages::events.index')->name('events.index');
+Route::livewire('events/{event}', 'pages::events.show')->name('events.show');
 
-// Admin-only event management routes (must come before {event} route)
-Route::middleware(['auth', 'role:admin,superadmin'])->group(function () {
-    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
-    Route::post('/events', [EventController::class, 'store'])->name('events.store');
-    Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
-    Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
-    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
-});
-
-// This must come after the create route
-Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
-
-// Super admin only - User management routes
+// Super Admin User Role Management
 Route::middleware(['auth', 'role:superadmin'])->group(function () {
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::livewire('users', 'pages::users.index')->name('users.index');
 });
+
+// Authenticated Member Dashboard
+Route::middleware(['auth'])->group(function () {
+    Route::livewire('dashboard', 'pages::dashboard.index')->name('dashboard');
+});
+
+if (app()->environment('local')) {
+    Route::get('/dev-login', function () {
+        $user = \App\Models\User::where('email', 'tiger72.jd@gmail.com')->first();
+        if ($user) {
+            auth()->login($user);
+        }
+        return redirect()->route('dashboard');
+    })->name('dev.login');
+}
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

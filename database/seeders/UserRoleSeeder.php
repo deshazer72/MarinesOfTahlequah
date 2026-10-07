@@ -14,6 +14,17 @@ class UserRoleSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create Joshua Deshazer (Primary Super Admin)
+        User::firstOrCreate(
+            ['email' => 'tiger72.jd@gmail.com'],
+            [
+                'name' => 'Joshua Deshazer',
+                'password' => Hash::make('password'),
+                'role' => 'superadmin',
+                'email_verified_at' => now(),
+            ]
+        );
+
         // Create Super Admin
         User::firstOrCreate(
             ['email' => 'superadmin@marinesoftahlequah.com'],
