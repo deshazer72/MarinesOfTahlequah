@@ -94,7 +94,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'sslmode' => env('DB_SSLMODE', in_array(env('DB_HOST'), ['127.0.0.1', 'localhost', null, '']) ? 'prefer' : 'require'),
         ],
 
         'sqlsrv' => [
