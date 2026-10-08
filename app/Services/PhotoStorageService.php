@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\UploadedPhoto;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -18,11 +19,49 @@ class PhotoStorageService
      */
     public static function store(TemporaryUploadedFile|UploadedFile $file, ?int $userId = null): string
     {
-        $rawContent = file_get_contents($file->getRealPath());
+        $rawContent = '';
+
+        if (method_exists($file, 'get')) {
+            try {
+                $rawContent = (string) $file->get();
+            } catch (\Throwable) {
+            }
+        }
+
+        if (empty($rawContent) && method_exists($file, 'readStream')) {
+            try {
+                $stream = $file->readStream();
+                if (is_resource($stream)) {
+                    $rawContent = (string) stream_get_contents($stream);
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        if (empty($rawContent)) {
+            try {
+                $realPath = $file->getRealPath();
+                if ($realPath && file_exists($realPath)) {
+                    $rawContent = (string) file_get_contents($realPath);
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        if (empty($rawContent)) {
+            try {
+                $path = method_exists($file, 'path') ? $file->path() : null;
+                if ($path && file_exists($path)) {
+                    $rawContent = (string) file_get_contents($path);
+                }
+            } catch (\Throwable) {
+            }
+        }
+
         $mime = $file->getMimeType() ?: 'image/jpeg';
         $originalName = $file->getClientOriginalName();
 
-        $processedData = self::optimizeImage($rawContent, $file->getRealPath(), $mime);
+        $processedData = self::optimizeImage($rawContent, $mime);
 
         // Check if Cloud Object Storage (S3 / Cloudflare R2) is configured
         $defaultDisk = config('filesystems.default');
@@ -48,7 +87,7 @@ class PhotoStorageService
 
         // 2. Database storage fallback (Serverless PostgreSQL)
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('uploaded_photos')) {
+            if (Schema::hasTable('uploaded_photos')) {
                 $photo = UploadedPhoto::create([
                     'filename' => $originalName,
                     'mime_type' => $processedData['mime'],
@@ -72,9 +111,9 @@ class PhotoStorageService
     /**
      * Optimize, fix orientation, and resize large images using GD.
      */
-    protected static function optimizeImage(string $rawContent, string $filePath, string $mime): array
+    protected static function optimizeImage(string $rawContent, string $mime): array
     {
-        if (! extension_loaded('gd')) {
+        if (empty($rawContent) || ! extension_loaded('gd')) {
             return ['binary' => $rawContent, 'mime' => $mime];
         }
 
@@ -86,14 +125,20 @@ class PhotoStorageService
 
             // Correct EXIF orientation for photos taken on phones
             if (function_exists('exif_read_data') && in_array($mime, ['image/jpeg', 'image/jpg'], true)) {
-                $exif = @exif_read_data($filePath);
-                if (! empty($exif['Orientation'])) {
-                    $image = match ($exif['Orientation']) {
-                        3 => imagerotate($image, 180, 0),
-                        6 => imagerotate($image, -90, 0),
-                        8 => imagerotate($image, 90, 0),
-                        default => $image,
-                    };
+                $tempPath = @tempnam(sys_get_temp_dir(), 'mot_img_');
+                if ($tempPath) {
+                    @file_put_contents($tempPath, $rawContent);
+                    $exif = @exif_read_data($tempPath);
+                    @unlink($tempPath);
+
+                    if (! empty($exif['Orientation'])) {
+                        $image = match ($exif['Orientation']) {
+                            3 => imagerotate($image, 180, 0),
+                            6 => imagerotate($image, -90, 0),
+                            8 => imagerotate($image, 90, 0),
+                            default => $image,
+                        };
+                    }
                 }
             }
 
