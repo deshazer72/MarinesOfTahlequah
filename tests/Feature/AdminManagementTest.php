@@ -4,8 +4,10 @@ use App\Models\Event;
 use App\Models\SlideshowImage;
 use App\Models\UploadedPhoto;
 use App\Models\User;
+use App\Services\PhotoStorageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -368,4 +370,19 @@ test('admin can upload photo file from device for slideshow image', function () 
     $photoId = (int) str_replace('/photos/', '', $slide->image_url);
     $uploadedPhoto = UploadedPhoto::find($photoId);
     expect($uploadedPhoto)->not->toBeNull();
+});
+
+test('photo storage service uploads to S3/R2 when bucket is configured', function () {
+    Storage::fake('s3');
+    config([
+        'filesystems.default' => 's3',
+        'filesystems.disks.s3.bucket' => 'mot-bucket',
+        'filesystems.disks.s3.url' => 'https://pub-r2.laravel.cloud/mot-bucket',
+    ]);
+
+    $file = UploadedFile::fake()->image('cloud_image.jpg', 600, 400);
+    $url = PhotoStorageService::store($file, 1);
+
+    expect(Storage::disk('s3')->allFiles())->not->toBeEmpty();
+    expect($url)->toContain('photos/');
 });
