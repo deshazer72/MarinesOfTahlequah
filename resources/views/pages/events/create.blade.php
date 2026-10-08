@@ -77,23 +77,33 @@ class extends Component {
             'photo_file' => 'nullable|image|max:10240',
         ]);
 
-        if ($this->photo_file) {
-            $validated['image_url'] = PhotoStorageService::store($this->photo_file, Auth::id());
+        try {
+            if ($this->photo_file) {
+                $validated['image_url'] = PhotoStorageService::store($this->photo_file, Auth::id());
+            }
+
+            unset($validated['photo_file']);
+            $validated['created_by'] = Auth::id();
+            $validated['updated_by'] = Auth::id();
+
+            Event::create($validated);
+
+            Flux::toast(
+                text: __('Event created successfully.'),
+                heading: __('Created'),
+                variant: 'success',
+            );
+
+            $this->redirect(route('events.index'), navigate: true);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Event create error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+
+            Flux::toast(
+                text: __('Error saving event: ') . $e->getMessage(),
+                heading: __('Save Failed'),
+                variant: 'danger',
+            );
         }
-
-        unset($validated['photo_file']);
-        $validated['created_by'] = Auth::id();
-        $validated['updated_by'] = Auth::id();
-
-        Event::create($validated);
-
-        Flux::toast(
-            text: __('Event created successfully.'),
-            heading: __('Created'),
-            variant: 'success',
-        );
-
-        $this->redirect(route('events.index'), navigate: true);
     }
 }; ?>
 

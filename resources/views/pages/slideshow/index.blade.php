@@ -81,30 +81,40 @@ class extends Component {
             return;
         }
 
-        $finalUrl = trim($this->image_url);
+        try {
+            $finalUrl = trim($this->image_url);
 
-        if ($this->upload_file) {
-            $finalUrl = PhotoStorageService::store($this->upload_file, Auth::id());
+            if ($this->upload_file) {
+                $finalUrl = PhotoStorageService::store($this->upload_file, Auth::id());
+            }
+
+            $maxOrder = SlideshowImage::max('sort_order') ?? 0;
+
+            SlideshowImage::create([
+                'image_url' => $finalUrl,
+                'title' => $this->title ?: 'Slideshow Photo',
+                'caption' => $this->caption ?: null,
+                'sort_order' => $maxOrder + 1,
+                'is_active' => true,
+                'created_by' => Auth::id(),
+            ]);
+
+            $this->reset(['upload_file', 'image_url', 'title', 'caption']);
+
+            Flux::toast(
+                text: __('Photo added to slideshow successfully.'),
+                heading: __('Added'),
+                variant: 'success',
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Slideshow upload error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+
+            Flux::toast(
+                text: __('Error adding photo: ') . $e->getMessage(),
+                heading: __('Upload Failed'),
+                variant: 'danger',
+            );
         }
-
-        $maxOrder = SlideshowImage::max('sort_order') ?? 0;
-
-        SlideshowImage::create([
-            'image_url' => $finalUrl,
-            'title' => $this->title ?: 'Slideshow Photo',
-            'caption' => $this->caption ?: null,
-            'sort_order' => $maxOrder + 1,
-            'is_active' => true,
-            'created_by' => Auth::id(),
-        ]);
-
-        $this->reset(['upload_file', 'image_url', 'title', 'caption']);
-
-        Flux::toast(
-            text: __('Photo added to slideshow successfully.'),
-            heading: __('Added'),
-            variant: 'success',
-        );
     }
 
     public function toggleActive(int $id): void

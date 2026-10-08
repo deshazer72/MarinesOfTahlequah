@@ -84,22 +84,32 @@ class extends Component {
             'photo_file' => 'nullable|image|max:10240',
         ]);
 
-        if ($this->photo_file) {
-            $validated['image_url'] = PhotoStorageService::store($this->photo_file, Auth::id());
+        try {
+            if ($this->photo_file) {
+                $validated['image_url'] = PhotoStorageService::store($this->photo_file, Auth::id());
+            }
+
+            unset($validated['photo_file']);
+            $validated['updated_by'] = Auth::id();
+
+            $this->event->update($validated);
+
+            Flux::toast(
+                text: __('Event updated successfully.'),
+                heading: __('Updated'),
+                variant: 'success',
+            );
+
+            $this->redirect(route('events.show', $this->event), navigate: true);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Event update error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+
+            Flux::toast(
+                text: __('Error updating event: ') . $e->getMessage(),
+                heading: __('Update Failed'),
+                variant: 'danger',
+            );
         }
-
-        unset($validated['photo_file']);
-        $validated['updated_by'] = Auth::id();
-
-        $this->event->update($validated);
-
-        Flux::toast(
-            text: __('Event updated successfully.'),
-            heading: __('Updated'),
-            variant: 'success',
-        );
-
-        $this->redirect(route('events.show', $this->event), navigate: true);
     }
 }; ?>
 

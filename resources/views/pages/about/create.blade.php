@@ -79,22 +79,32 @@ class extends Component {
             'is_published' => 'boolean',
         ]);
 
-        if ($this->photo_file) {
-            $validated['image_url'] = PhotoStorageService::store($this->photo_file, Auth::id());
+        try {
+            if ($this->photo_file) {
+                $validated['image_url'] = PhotoStorageService::store($this->photo_file, Auth::id());
+            }
+
+            unset($validated['photo_file']);
+            $validated['user_id'] = Auth::id();
+
+            About::create($validated);
+
+            Flux::toast(
+                text: __('About content published successfully.'),
+                heading: __('Created'),
+                variant: 'success',
+            );
+
+            $this->redirect(route('about.index'), navigate: true);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('About create error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+
+            Flux::toast(
+                text: __('Error saving content: ') . $e->getMessage(),
+                heading: __('Save Failed'),
+                variant: 'danger',
+            );
         }
-
-        unset($validated['photo_file']);
-        $validated['user_id'] = Auth::id();
-
-        About::create($validated);
-
-        Flux::toast(
-            text: __('About content published successfully.'),
-            heading: __('Created'),
-            variant: 'success',
-        );
-
-        $this->redirect(route('about.index'), navigate: true);
     }
 }; ?>
 

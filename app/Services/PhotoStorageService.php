@@ -46,16 +46,27 @@ class PhotoStorageService
             }
         }
 
-        // Database storage fallback (Serverless PostgreSQL)
-        $photo = UploadedPhoto::create([
-            'filename' => $originalName,
-            'mime_type' => $processedData['mime'],
-            'file_size' => strlen($processedData['binary']),
-            'image_data' => base64_encode($processedData['binary']),
-            'created_by' => $userId,
-        ]);
+        // 2. Database storage fallback (Serverless PostgreSQL)
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('uploaded_photos')) {
+                $photo = UploadedPhoto::create([
+                    'filename' => $originalName,
+                    'mime_type' => $processedData['mime'],
+                    'file_size' => strlen($processedData['binary']),
+                    'image_data' => base64_encode($processedData['binary']),
+                    'created_by' => $userId,
+                ]);
 
-        return '/photos/'.$photo->id;
+                return '/photos/'.$photo->id;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Database photo storage failed, falling back to local storage: '.$e->getMessage());
+        }
+
+        // 3. Last-resort fallback: store to local public disk
+        $path = $file->store('events', 'public');
+
+        return '/storage/'.$path;
     }
 
     /**

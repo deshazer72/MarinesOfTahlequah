@@ -87,21 +87,31 @@ class extends Component {
             'is_published' => 'boolean',
         ]);
 
-        if ($this->photo_file) {
-            $validated['image_url'] = PhotoStorageService::store($this->photo_file, Auth::id());
+        try {
+            if ($this->photo_file) {
+                $validated['image_url'] = PhotoStorageService::store($this->photo_file, Auth::id());
+            }
+
+            unset($validated['photo_file']);
+
+            $this->about->update($validated);
+
+            Flux::toast(
+                text: __('About content updated successfully.'),
+                heading: __('Updated'),
+                variant: 'success',
+            );
+
+            $this->redirect(route('about.index'), navigate: true);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('About update error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+
+            Flux::toast(
+                text: __('Error updating content: ') . $e->getMessage(),
+                heading: __('Update Failed'),
+                variant: 'danger',
+            );
         }
-
-        unset($validated['photo_file']);
-
-        $this->about->update($validated);
-
-        Flux::toast(
-            text: __('About content updated successfully.'),
-            heading: __('Updated'),
-            variant: 'success',
-        );
-
-        $this->redirect(route('about.index'), navigate: true);
     }
 }; ?>
 
