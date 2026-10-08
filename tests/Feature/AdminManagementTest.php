@@ -1,7 +1,12 @@
 <?php
 
+use App\Models\Event;
+use App\Models\SlideshowImage;
+use App\Models\UploadedPhoto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -52,7 +57,7 @@ test('superadmins can access all management routes and user roles', function () 
 test('admin can create event via component', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    \Livewire\Livewire::actingAs($admin)
+    Livewire::actingAs($admin)
         ->test('pages::events.create')
         ->set('event_name', 'Annual Toys for Tots Drive')
         ->set('event_datetime', '2026-11-20 10:00:00')
@@ -71,7 +76,7 @@ test('admin can create event via component', function () {
 test('admin can create about entry via component', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    \Livewire\Livewire::actingAs($admin)
+    Livewire::actingAs($admin)
         ->test('pages::about.create')
         ->set('title', 'Cherokee County Marine Support')
         ->set('content', 'We support veterans and military families in Cherokee County.')
@@ -89,7 +94,7 @@ test('admin can create about entry via component', function () {
 test('admin can add, toggle, and delete slideshow images', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $component = \Livewire\Livewire::actingAs($admin)
+    $component = Livewire::actingAs($admin)
         ->test('pages::slideshow.index')
         ->set('image_url', '/MarinesPictures/IMG_8940.JPG')
         ->set('title', 'Color Guard Ceremony')
@@ -103,7 +108,7 @@ test('admin can add, toggle, and delete slideshow images', function () {
         'is_active' => true,
     ]);
 
-    $image = \App\Models\SlideshowImage::where('title', 'Color Guard Ceremony')->first();
+    $image = SlideshowImage::where('title', 'Color Guard Ceremony')->first();
 
     // Toggle active
     $component->call('toggleActive', $image->id);
@@ -148,7 +153,7 @@ test('superadmin can change user role and delete user', function () {
     $user = User::factory()->create(['role' => 'user']);
 
     // Change role via updateUserRole
-    \Livewire\Livewire::actingAs($superadmin)
+    Livewire::actingAs($superadmin)
         ->test('pages::users.index')
         ->call('updateUserRole', $user->id, 'admin');
 
@@ -158,7 +163,7 @@ test('superadmin can change user role and delete user', function () {
     ]);
 
     // Delete user via delete modal
-    \Livewire\Livewire::actingAs($superadmin)
+    Livewire::actingAs($superadmin)
         ->test('pages::users.index')
         ->call('openDeleteModal', $user->id, $user->name)
         ->call('deleteUser');
@@ -172,7 +177,7 @@ test('superadmin can open role modal, update role, and receive confirmation bann
     $superadmin = User::factory()->create(['role' => 'superadmin']);
     $user = User::factory()->create(['role' => 'user', 'name' => 'John Doe']);
 
-    \Livewire\Livewire::actingAs($superadmin)
+    Livewire::actingAs($superadmin)
         ->test('pages::users.index')
         ->assertDontSee('Change User Role')
         ->call('openRoleModal', $user->id)
@@ -195,7 +200,7 @@ test('superadmin cannot change own role or delete own account', function () {
     $superadmin = User::factory()->create(['role' => 'superadmin', 'name' => 'Root Admin']);
     $anotherSuper = User::factory()->create(['role' => 'superadmin']);
 
-    \Livewire\Livewire::actingAs($superadmin)
+    Livewire::actingAs($superadmin)
         ->test('pages::users.index')
         ->call('updateUserRole', $superadmin->id, 'admin')
         ->assertSee('You cannot change your own role.')
@@ -214,7 +219,7 @@ test('cannot remove or delete the last super admin', function () {
     $otherAdmin = User::factory()->create(['role' => 'admin']);
 
     // Attempting to demote the sole superadmin
-    \Livewire\Livewire::actingAs($superadmin)
+    Livewire::actingAs($superadmin)
         ->test('pages::users.index')
         // Even if calling directly:
         ->call('updateUserRole', $superadmin->id, 'admin')
@@ -223,11 +228,10 @@ test('cannot remove or delete the last super admin', function () {
     expect(User::where('role', 'superadmin')->count())->toBe(1);
 });
 
-
 test('admin can browse gallery photos on slideshow component', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $component = \Livewire\Livewire::actingAs($admin)
+    $component = Livewire::actingAs($admin)
         ->test('pages::slideshow.index');
 
     $libraryPhotos = $component->instance()->getAvailablePhotos();
@@ -241,7 +245,7 @@ test('admin can browse gallery photos on slideshow component', function () {
 test('events page renders uncropped ambient backdrop photos without cropping', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     $eventDate = now()->addDays(5)->setTime(18, 30);
-    $event = \App\Models\Event::create([
+    $event = Event::create([
         'event_name' => 'Tahlequah Marine Ball',
         'event_datetime' => $eventDate,
         'description' => 'Annual ball celebration',
@@ -251,14 +255,14 @@ test('events page renders uncropped ambient backdrop photos without cropping', f
     ]);
 
     // Test in selected date view
-    \Livewire\Livewire::test('pages::events.index')
+    Livewire::test('pages::events.index')
         ->call('selectDate', $eventDate->toDateString())
         ->assertSee('object-contain')
         ->assertSee('filter blur-2xl')
         ->assertSee('/MarinesPictures/IMG_8936.JPG');
 
     // Test in cards grid view
-    \Livewire\Livewire::test('pages::events.index')
+    Livewire::test('pages::events.index')
         ->set('view_mode', 'cards')
         ->assertSee('object-contain')
         ->assertSee('filter blur-2xl')
@@ -276,7 +280,7 @@ test('admin can create and edit event with calendar picker', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
     // Test creating event with datetime
-    \Livewire\Livewire::actingAs($admin)
+    Livewire::actingAs($admin)
         ->test('pages::events.create')
         ->set('event_name', 'Toys for Tots Drive')
         ->set('event_datetime', '2026-11-20T14:00')
@@ -286,12 +290,12 @@ test('admin can create and edit event with calendar picker', function () {
         ->assertHasNoErrors()
         ->assertRedirect('/events');
 
-    $event = \App\Models\Event::where('event_name', 'Toys for Tots Drive')->first();
+    $event = Event::where('event_name', 'Toys for Tots Drive')->first();
     expect($event)->not->toBeNull();
     expect($event->event_datetime->format('Y-m-d H:i'))->toBe('2026-11-20 14:00');
 
     // Test editing event with new datetime
-    \Livewire\Livewire::actingAs($admin)
+    Livewire::actingAs($admin)
         ->test('pages::events.edit', ['event' => $event])
         ->set('event_datetime', '2026-11-21T16:30')
         ->call('update')
@@ -301,4 +305,67 @@ test('admin can create and edit event with calendar picker', function () {
     expect($event->event_datetime->format('Y-m-d H:i'))->toBe('2026-11-21 16:30');
 });
 
+test('admin can upload photo file from device and store in database for event', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $file = UploadedFile::fake()->image('veterans_fundraiser.jpg', 800, 600);
 
+    Livewire::actingAs($admin)
+        ->test('pages::events.create')
+        ->set('event_name', 'Veterans Community Banquet')
+        ->set('event_datetime', '2026-11-15T18:00')
+        ->set('description', 'Join us for dinner and fellowship.')
+        ->set('photo_file', $file)
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect('/events');
+
+    $event = Event::where('event_name', 'Veterans Community Banquet')->first();
+    expect($event)->not->toBeNull();
+    expect($event->image_url)->toStartWith('/photos/');
+
+    // Assert photo is in database
+    $photoId = (int) str_replace('/photos/', '', $event->image_url);
+    $uploadedPhoto = UploadedPhoto::find($photoId);
+    expect($uploadedPhoto)->not->toBeNull();
+    expect($uploadedPhoto->mime_type)->toBe('image/jpeg');
+    expect($uploadedPhoto->image_data)->not->toBeEmpty();
+
+    // Verify photo route serves it
+    $response = test()->get($event->image_url);
+    $response->assertStatus(200);
+    $response->assertHeader('Content-Type', 'image/jpeg');
+
+    // Test editing event with new photo
+    $newFile = UploadedFile::fake()->image('updated_event.png', 400, 400);
+
+    Livewire::actingAs($admin)
+        ->test('pages::events.edit', ['event' => $event])
+        ->set('photo_file', $newFile)
+        ->call('update')
+        ->assertHasNoErrors();
+
+    $event->refresh();
+    expect($event->image_url)->toStartWith('/photos/');
+    $newPhotoId = (int) str_replace('/photos/', '', $event->image_url);
+    expect($newPhotoId)->not->toBe($photoId);
+});
+
+test('admin can upload photo file from device for slideshow image', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $file = UploadedFile::fake()->image('slide_pic.jpg', 1200, 800);
+
+    Livewire::actingAs($admin)
+        ->test('pages::slideshow.index')
+        ->set('upload_file', $file)
+        ->set('title', 'Ceremony Slide')
+        ->call('addImage')
+        ->assertHasNoErrors();
+
+    $slide = SlideshowImage::where('title', 'Ceremony Slide')->first();
+    expect($slide)->not->toBeNull();
+    expect($slide->image_url)->toStartWith('/photos/');
+
+    $photoId = (int) str_replace('/photos/', '', $slide->image_url);
+    $uploadedPhoto = UploadedPhoto::find($photoId);
+    expect($uploadedPhoto)->not->toBeNull();
+});

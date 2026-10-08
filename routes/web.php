@@ -1,10 +1,40 @@
 <?php
 
+use App\Models\UploadedPhoto;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 Route::livewire('donate', 'pages::donate.index')->name('donate');
 Route::livewire('about', 'pages::about.index')->name('about.index');
+
+// Public route to serve database-stored uploaded photos
+Route::get('/photos/{photo}', function (UploadedPhoto $photo) {
+    $binary = base64_decode($photo->image_data);
+    $etag = '"'.md5($photo->id.'-'.$photo->updated_at?->timestamp).'"';
+
+    if (request()->header('If-None-Match') === $etag) {
+        return response('', 304);
+    }
+
+    return response($binary, 200, [
+        'Content-Type' => $photo->mime_type ?: 'image/jpeg',
+        'Content-Length' => strlen($binary),
+        'Cache-Control' => 'public, max-age=31536000, immutable',
+        'ETag' => $etag,
+    ]);
+})->name('photos.show');
+
+// Fallback to serve files in storage/app/public if storage:link symlink is missing on cloud
+Route::get('/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public/'.$path);
+    if (file_exists($fullPath) && is_file($fullPath)) {
+        return response()->file($fullPath, [
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
+    abort(404);
+})->where('path', '.*');
 
 // Admin Event, About & Slideshow Management (must come before dynamic {event} param)
 Route::middleware(['auth', 'role:admin,superadmin'])->group(function () {
@@ -31,10 +61,11 @@ Route::middleware(['auth'])->group(function () {
 
 if (app()->environment('local')) {
     Route::get('/dev-login', function () {
-        $user = \App\Models\User::where('email', 'tiger72.jd@gmail.com')->first();
+        $user = User::where('email', 'tiger72.jd@gmail.com')->first();
         if ($user) {
             auth()->login($user);
         }
+
         return redirect()->route('dashboard');
     })->name('dev.login');
 }

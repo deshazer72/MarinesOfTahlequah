@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\SlideshowImage;
+use App\Services\PhotoStorageService;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -83,8 +84,7 @@ class extends Component {
         $finalUrl = trim($this->image_url);
 
         if ($this->upload_file) {
-            $path = $this->upload_file->store('slideshow', 'public');
-            $finalUrl = '/storage/' . $path;
+            $finalUrl = PhotoStorageService::store($this->upload_file, Auth::id());
         }
 
         $maxOrder = SlideshowImage::max('sort_order') ?? 0;
@@ -226,12 +226,12 @@ class extends Component {
                         <input
                             type="file"
                             wire:model="upload_file"
-                            accept="image/png,image/jpeg,image/webp,image/jpg"
+                            accept="image/*"
                             class="block w-full text-xs text-zinc-600 dark:text-zinc-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-700 file:text-white hover:file:bg-red-600 cursor-pointer border border-zinc-300 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800/80 p-1.5 focus:outline-hidden transition"
                         />
-                        <div wire:loading wire:target="upload_file" class="mt-2 text-xs text-amber-500 font-medium flex items-center gap-1.5">
-                            <svg class="size-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                            <span>Uploading file...</span>
+                        <div wire:loading wire:target="upload_file" class="mt-2 flex items-center gap-2 text-xs font-semibold text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5">
+                            <svg class="size-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                            <span>Uploading photo from device... Please wait for preview before adding.</span>
                         </div>
                         @error('upload_file')
                             <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
@@ -296,8 +296,20 @@ class extends Component {
 
                     <flux:textarea wire:model="caption" :label="__('Description (Optional)')" rows="2" placeholder="Optional details..." />
 
-                    <flux:button type="submit" variant="primary" class="w-full bg-red-700 hover:bg-red-600 text-white mt-2">
-                        {{ __('Add to Slideshow') }}
+                    <flux:button
+                        type="submit"
+                        variant="primary"
+                        wire:loading.attr="disabled"
+                        wire:target="upload_file, addImage"
+                        class="w-full bg-red-700 hover:bg-red-600 text-white mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span wire:loading.remove wire:target="upload_file">
+                            {{ __('Add to Slideshow') }}
+                        </span>
+                        <span wire:loading wire:target="upload_file" class="flex items-center justify-center gap-2">
+                            <svg class="size-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                            {{ __('Uploading photo...') }}
+                        </span>
                     </flux:button>
                 </form>
             </div>
