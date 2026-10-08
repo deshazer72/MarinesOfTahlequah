@@ -399,6 +399,7 @@ class extends Component {
                                                         alt=""
                                                         aria-hidden="true"
                                                         class="absolute inset-0 w-full h-full object-cover filter blur-2xl opacity-40 scale-110 pointer-events-none select-none"
+                                                        onerror="this.style.display='none'"
                                                     />
                                                     {{-- Crisp uncropped photo showing full subject and faces --}}
                                                     <img
@@ -516,6 +517,7 @@ class extends Component {
                                             alt=""
                                             aria-hidden="true"
                                             class="absolute inset-0 w-full h-full object-cover filter blur-2xl opacity-40 scale-110 pointer-events-none select-none"
+                                            onerror="this.style.display='none'"
                                         />
                                         {{-- Crisp uncropped photo showing full subject and faces --}}
                                         <img

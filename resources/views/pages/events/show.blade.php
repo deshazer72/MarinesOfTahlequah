@@ -65,6 +65,7 @@ class extends Component {
                         alt=""
                         aria-hidden="true"
                         class="absolute inset-0 w-full h-full object-cover filter blur-2xl opacity-40 scale-110 pointer-events-none select-none"
+                        onerror="this.style.display='none'"
                     />
                     {{-- Full uncropped photo --}}
                     <img
@@ -72,7 +73,7 @@ class extends Component {
                         alt="{{ $event->event_name }}"
                         class="relative z-10 w-auto max-w-full max-h-[580px] object-contain shadow-2xl"
                         style="max-height: 580px;"
-                        onerror="this.parentElement.style.display='none'"
+                        onerror="this.closest('.relative').style.display='none'"
                     />
                 </div>
             @endif

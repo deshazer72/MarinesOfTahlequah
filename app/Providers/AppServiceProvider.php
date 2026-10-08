@@ -23,5 +23,10 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
+
+        // Ensure public/storage symlink exists on containerized / cloud environments
+        if (! file_exists(public_path('storage')) && is_dir(storage_path('app/public'))) {
+            @symlink(storage_path('app/public'), public_path('storage'));
+        }
     }
 }
