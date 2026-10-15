@@ -120,7 +120,7 @@
                             <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                                 {{ __('Settings') }}
                             </flux:menu.item>
-                            <form method="POST" action="{{ route('logout') }}" class="w-full">
+                            <form method="POST" action="{{ route('logout', absolute: false) }}" class="w-full">
                                 @csrf
                                 <flux:menu.item
                                     as="button"
@@ -134,10 +134,10 @@
                         </flux:menu>
                     </flux:dropdown>
                 @else
-                    <flux:button variant="ghost" :href="route('login')" wire:navigate class="text-sm font-medium text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:text-white dark:hover:bg-zinc-800/60">
+                    <flux:button variant="ghost" :href="route('login', absolute: false)" class="text-sm font-medium text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:text-white dark:hover:bg-zinc-800/60">
                         Log in
                     </flux:button>
-                    <flux:button variant="primary" :href="route('register')" wire:navigate class="bg-red-700 hover:bg-red-600 text-white text-sm font-semibold shadow-md">
+                    <flux:button variant="primary" :href="route('register', absolute: false)" class="bg-red-700 hover:bg-red-600 text-white text-sm font-semibold shadow-md">
                         Register
                     </flux:button>
                 @endauth
@@ -229,7 +229,7 @@
 
                             <flux:menu.separator />
                             <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>Settings</flux:menu.item>
-                            <form method="POST" action="{{ route('logout') }}" class="w-full">
+                            <form method="POST" action="{{ route('logout', absolute: false) }}" class="w-full">
                                 @csrf
                                 <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full text-red-600 dark:text-red-400">
                                     Log out
@@ -237,8 +237,8 @@
                             </form>
                         @else
                             <flux:menu.separator />
-                            <flux:menu.item :href="route('login')" icon="arrow-right-end-on-rectangle" wire:navigate>Log in</flux:menu.item>
-                            <flux:menu.item :href="route('register')" icon="user-plus" wire:navigate>Register</flux:menu.item>
+                            <flux:menu.item :href="route('login', absolute: false)" icon="arrow-right-end-on-rectangle">Log in</flux:menu.item>
+                            <flux:menu.item :href="route('register', absolute: false)" icon="user-plus">Register</flux:menu.item>
                         @endauth
                     </flux:menu>
                 </flux:dropdown>

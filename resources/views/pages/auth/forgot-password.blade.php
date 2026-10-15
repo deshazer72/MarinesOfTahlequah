@@ -4,7 +4,7 @@
 
         <x-auth-session-status :status="session('status')" />
 
-        <form method="POST" action="{{ route('password.email') }}" class="flex flex-col gap-5">
+        <form method="POST" action="{{ route('password.email', absolute: false) }}" class="flex flex-col gap-5">
             @csrf
 
             <flux:input

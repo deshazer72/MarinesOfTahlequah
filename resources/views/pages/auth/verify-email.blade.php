@@ -9,14 +9,14 @@
         @endif
 
         <div class="flex flex-col gap-4">
-            <form method="POST" action="{{ route('verification.send') }}">
+            <form method="POST" action="{{ route('verification.send', absolute: false) }}">
                 @csrf
                 <flux:button type="submit" variant="primary" class="w-full bg-red-700 hover:bg-red-600 text-white">
                     {{ __('Resend Verification Email') }}
                 </flux:button>
             </form>
 
-            <form method="POST" action="{{ route('logout') }}" class="text-center">
+            <form method="POST" action="{{ route('logout', absolute: false) }}" class="text-center">
                 @csrf
                 <flux:button variant="ghost" type="submit" class="text-sm text-zinc-400">
                     {{ __('Log out') }}

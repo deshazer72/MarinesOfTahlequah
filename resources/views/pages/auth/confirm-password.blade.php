@@ -2,7 +2,7 @@
     <div class="flex flex-col gap-6">
         <x-auth-header :title="__('Confirm your password')" :description="__('This is a secure area. Please confirm your password before continuing.')" />
 
-        <form method="POST" action="{{ route('password.confirm.store') }}" class="flex flex-col gap-5">
+        <form method="POST" action="{{ route('password.confirm.store', absolute: false) }}" class="flex flex-col gap-5">
             @csrf
 
             <flux:input
