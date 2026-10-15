@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Event;
+use App\Services\EventNotificationService;
 use App\Services\PhotoStorageService;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
@@ -86,7 +87,9 @@ class extends Component {
             $validated['created_by'] = Auth::id();
             $validated['updated_by'] = Auth::id();
 
-            Event::create($validated);
+            $event = Event::create($validated);
+
+            EventNotificationService::notifySubscribers($event);
 
             Flux::toast(
                 text: __('Event created successfully.'),

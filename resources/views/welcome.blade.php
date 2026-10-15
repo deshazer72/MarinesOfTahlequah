@@ -13,9 +13,18 @@
                     Dedicated advocates for service members, veterans, and their families across the Tahlequah and Cherokee County community.
                 </p>
                 <div class="mt-6 flex flex-wrap justify-center gap-3">
-                    <flux:button variant="primary" :href="route('donate')" icon="heart" wire:navigate class="bg-red-700 hover:bg-red-600 text-white font-semibold shadow-xs">
-                        Support Our Veterans
-                    </flux:button>
+                    @if(\App\Models\SiteSetting::isBirthdaySurveyEnabled())
+                        <flux:button variant="primary" :href="route('birthday.index')" icon="clipboard-document-check" wire:navigate class="bg-red-700 hover:bg-red-600 text-white font-semibold shadow-xs">
+                            Birthday Survey
+                        </flux:button>
+                        <flux:button variant="ghost" :href="route('donate')" icon="heart" wire:navigate class="border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 font-semibold">
+                            Support Our Veterans
+                        </flux:button>
+                    @else
+                        <flux:button variant="primary" :href="route('donate')" icon="heart" wire:navigate class="bg-red-700 hover:bg-red-600 text-white font-semibold shadow-xs">
+                            Support Our Veterans
+                        </flux:button>
+                    @endif
                     <flux:button variant="ghost" :href="route('events.index')" icon="calendar" wire:navigate class="border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                         View Upcoming Events
                     </flux:button>

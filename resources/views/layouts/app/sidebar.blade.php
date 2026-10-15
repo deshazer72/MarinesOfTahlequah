@@ -18,6 +18,11 @@
                     <flux:sidebar.item icon="calendar" :href="route('events.index')" :current="request()->routeIs('events.*') && !request()->routeIs('events.create') && !request()->routeIs('events.edit')" wire:navigate>
                         {{ __('Events') }}
                     </flux:sidebar.item>
+                    @if(\App\Models\SiteSetting::isBirthdaySurveyEnabled())
+                        <flux:sidebar.item icon="clipboard-document-check" :href="route('birthday.index')" :current="request()->routeIs('birthday.index')" wire:navigate>
+                            {{ __('Birthday Survey') }}
+                        </flux:sidebar.item>
+                    @endif
                     <flux:sidebar.item icon="information-circle" :href="route('about.index')" :current="request()->routeIs('about.*') && !request()->routeIs('about.create') && !request()->routeIs('about.edit')" wire:navigate>
                         {{ __('About Us') }}
                     </flux:sidebar.item>
@@ -28,6 +33,9 @@
 
                 @if(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()))
                     <flux:sidebar.group :heading="__('Management')" class="grid">
+                        <flux:sidebar.item icon="clipboard-document-list" :href="route('admin.birthday')" :current="request()->routeIs('admin.birthday')" wire:navigate>
+                            {{ __('Birthday Surveys') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="plus-circle" :href="route('events.create')" :current="request()->routeIs('events.create')" wire:navigate>
                             {{ __('Add Event') }}
                         </flux:sidebar.item>

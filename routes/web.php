@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome')->name('home');
 Route::livewire('donate', 'pages::donate.index')->name('donate');
 Route::livewire('about', 'pages::about.index')->name('about.index');
+Route::livewire('birthday', 'pages::birthday.index')->name('birthday.index');
 
 // Public route to serve database-stored uploaded photos
 Route::get('/photos/{photo}', function (UploadedPhoto $photo) {
@@ -43,6 +44,7 @@ Route::middleware(['auth', 'role:admin,superadmin'])->group(function () {
     Route::livewire('about/create', 'pages::about.create')->name('about.create');
     Route::livewire('about/{about}/edit', 'pages::about.edit')->name('about.edit');
     Route::livewire('admin/slideshow', 'pages::slideshow.index')->name('admin.slideshow');
+    Route::livewire('admin/birthday', 'pages::birthday.admin')->name('admin.birthday');
 });
 
 // Public Events routes

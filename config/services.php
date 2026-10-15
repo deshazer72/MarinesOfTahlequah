@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'sms' => [
+        'enabled' => env('SMS_NOTIFICATIONS_ENABLED', false),
+        'driver' => env('SMS_DRIVER', 'twilio'),
+        'from' => env('SMS_FROM_NUMBER'),
+        'sid' => env('TWILIO_SID'),
+        'token' => env('TWILIO_AUTH_TOKEN'),
+        'webhook_url' => env('SMS_WEBHOOK_URL'),
+    ],
+
 ];

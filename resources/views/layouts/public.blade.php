@@ -43,6 +43,15 @@
                 >
                     Events
                 </a>
+                @if(\App\Models\SiteSetting::isBirthdaySurveyEnabled())
+                    <a
+                        href="{{ route('birthday.index') }}"
+                        wire:navigate
+                        class="px-3.5 py-2 rounded-lg text-sm font-medium transition-colors duration-150 {{ request()->routeIs('birthday.*') ? 'text-amber-600 dark:text-amber-400 font-semibold bg-amber-500/10 dark:bg-zinc-900/90 shadow-sm ring-1 ring-amber-500/30 dark:ring-zinc-700/60' : 'text-zinc-700 hover:text-amber-600 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:text-amber-400 dark:hover:bg-zinc-800/60' }}"
+                    >
+                        Birthday Survey
+                    </a>
+                @endif
                 <a
                     href="{{ route('donate') }}"
                     wire:navigate
@@ -168,6 +177,9 @@
                         <flux:menu.item :href="route('home')" icon="home" wire:navigate class="hover:text-amber-600 dark:hover:text-amber-400 {{ request()->routeIs('home') ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-zinc-700 dark:text-zinc-200' }}">Home</flux:menu.item>
                         <flux:menu.item :href="route('about.index')" icon="information-circle" wire:navigate class="hover:text-amber-600 dark:hover:text-amber-400 {{ request()->routeIs('about.*') ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-zinc-700 dark:text-zinc-200' }}">About Us</flux:menu.item>
                         <flux:menu.item :href="route('events.index')" icon="calendar" wire:navigate class="hover:text-amber-600 dark:hover:text-amber-400 {{ request()->routeIs('events.*') ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-zinc-700 dark:text-zinc-200' }}">Events</flux:menu.item>
+                        @if(\App\Models\SiteSetting::isBirthdaySurveyEnabled())
+                            <flux:menu.item :href="route('birthday.index')" icon="clipboard-document-check" wire:navigate class="hover:text-amber-600 dark:hover:text-amber-400 {{ request()->routeIs('birthday.*') ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-zinc-700 dark:text-zinc-200' }}">Birthday Survey</flux:menu.item>
+                        @endif
                         <flux:menu.item :href="route('donate')" icon="heart" wire:navigate class="hover:text-amber-600 dark:hover:text-amber-400 {{ request()->routeIs('donate') ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-zinc-700 dark:text-zinc-200' }}">Donate</flux:menu.item>
                         @auth
                             @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
@@ -205,6 +217,7 @@
                             <flux:menu.item :href="route('dashboard')" icon="home" wire:navigate>Dashboard</flux:menu.item>
 
                             @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+                                <flux:menu.item :href="route('admin.birthday')" icon="clipboard-document-list" wire:navigate>Birthday Surveys</flux:menu.item>
                                 <flux:menu.item :href="route('events.create')" icon="plus-circle" wire:navigate>Add Event</flux:menu.item>
                                 <flux:menu.item :href="route('about.create')" icon="document-plus" wire:navigate>Add About</flux:menu.item>
                                 <flux:menu.item :href="route('admin.slideshow')" icon="photo" wire:navigate>Slideshow</flux:menu.item>
@@ -260,6 +273,9 @@
                     <a href="{{ route('home') }}" class="transition hover:text-amber-600 dark:hover:text-amber-400" wire:navigate>Home</a>
                     <a href="{{ route('about.index') }}" class="transition hover:text-amber-600 dark:hover:text-amber-400" wire:navigate>About Us</a>
                     <a href="{{ route('events.index') }}" class="transition hover:text-amber-600 dark:hover:text-amber-400" wire:navigate>Events</a>
+                    @if(\App\Models\SiteSetting::isBirthdaySurveyEnabled())
+                        <a href="{{ route('birthday.index') }}" class="transition hover:text-amber-600 dark:hover:text-amber-400 {{ request()->routeIs('birthday.*') ? 'text-amber-600 dark:text-amber-400 font-semibold' : '' }}" wire:navigate>Birthday Survey</a>
+                    @endif
                     <a href="{{ route('donate') }}" class="transition hover:text-amber-600 dark:hover:text-amber-400 {{ request()->routeIs('donate') ? 'text-amber-600 dark:text-amber-400 font-semibold' : '' }}" wire:navigate>Donate</a>
                 </nav>
 

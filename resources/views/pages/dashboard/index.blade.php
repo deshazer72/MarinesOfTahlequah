@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\About;
+use App\Models\BirthdayAttendee;
 use App\Models\Event;
+use App\Models\SiteSetting;
 use App\Models\SlideshowImage;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +22,8 @@ class extends Component {
         return [
             'user' => $user,
             'eventsCount' => Event::count(),
+            'birthdayCount' => BirthdayAttendee::count(),
+            'birthdaySurveyEnabled' => SiteSetting::isBirthdaySurveyEnabled(),
             'upcomingEvents' => Event::where('event_datetime', '>=', now())
                 ->orderBy('event_datetime', 'asc')
                 ->take(3)
@@ -52,6 +56,9 @@ class extends Component {
 
         <div class="flex flex-wrap items-center gap-2">
             @if ($user->isAdmin() || $user->isSuperAdmin())
+                <flux:button variant="primary" :href="route('admin.birthday')" icon="clipboard-document-list" wire:navigate class="bg-amber-600 hover:bg-amber-500 text-white text-sm">
+                    Birthday Surveys ({{ $birthdayCount }}) &bull; {{ $birthdaySurveyEnabled ? 'ON' : 'OFF' }}
+                </flux:button>
                 <flux:button variant="primary" :href="route('events.create')" icon="plus" wire:navigate class="bg-red-700 hover:bg-red-600 text-white text-sm">
                     New Event
                 </flux:button>
